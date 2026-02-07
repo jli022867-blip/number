@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>批量金额计算（最终修正版）</title>
+<title>批量金额计算（最终增强版）</title>
 
 <style>
 body{
@@ -40,10 +40,10 @@ button{
 
 <body>
 
-<h2>批量金额计算（最终修正版）</h2>
+<h2>批量金额计算（增强版，支持“号”×4倍）</h2>
 
 <div class="box">
-<input id="inputText" placeholder="例：牛10猪羊马各20蛇20，10 20 30各30">
+<input id="inputText" placeholder="例：猪羊马号各10，10 20 30各30，牛10">
 <button onclick="calculate()">确认本轮</button>
 </div>
 
@@ -95,16 +95,23 @@ function calculate() {
         }
 
         // ---- 3. 统一各金额生肖 ----
+        // 匹配“中文+（可选号）+各+数字”
         let unifiedZodiacMatch = part.match(/([^\d]+)各(\d+)/);
         if(unifiedZodiacMatch){
-            let zs = unifiedZodiacMatch[1].split('');
+            let zsStr = unifiedZodiacMatch[1];
             let money = Number(unifiedZodiacMatch[2]);
+            let multiplier = 1;
+
+            // 如果含有“号”，则倍数 ×4
+            if(zsStr.includes('号')){
+                multiplier = 4;
+                zsStr = zsStr.replace(/号/g,''); // 去掉号字
+            }
+
+            let zs = zsStr.split('');
             zs.forEach(z=>{
-                // 只计算有效生肖，且不重复计入已经单独金额的
                 if(zodiac.includes(z)){
-                    // 检查 z 是否已经被单独金额处理过
-                    // 为了简单逻辑，统一各金额匹配前，已经处理单独金额的都包含数字，所以不会重复
-                    roundTotal += money;
+                    roundTotal += money * multiplier;
                 }
             });
         }
