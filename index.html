@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>批量金额计算（数字+生肖版）</title>
+<title>批量金额计算（数字+生肖任意数量）</title>
 
 <style>
 body{
@@ -39,10 +39,10 @@ button{
 </head>
 <body>
 
-<h2>批量金额计算（数字 + 生肖）</h2>
+<h2>批量金额计算（数字 + 生肖任意数量）</h2>
 
 <div class="box">
-<input id="inputText" placeholder="例：35 23各300，鸡牛各20，猪蛇各10">
+<input id="inputText" placeholder="例：35 23 11各300，牛鸡各20，猪蛇马各10">
 <button onclick="calculate()">确认本轮</button>
 </div>
 
@@ -75,31 +75,28 @@ function calculate(){
 
     parts.forEach(part=>{
         part = part.trim();
-        // 数字匹配：两个数字空格 + 各 + 金额
-        let numMatch = part.match(/(\d+)\s+(\d+)各(\d+)/);
+
+        // 数字部分匹配: 多个数字空格 + 各 + 金额
+        let numMatch = part.match(/([\d\s]+)各(\d+)/);
         if(numMatch){
-            let num1 = Number(numMatch[1]);
-            let num2 = Number(numMatch[2]);
-            let money = Number(numMatch[3]);
-            if(num1>=1 && num1<=49 && num2>=1 && num2<=49){
-                roundTotal += money*2;
-            }
+            let numsStr = numMatch[1].trim();
+            let nums = numsStr.split(/\s+/); // 空格拆分任意数量数字
+            let money = Number(numMatch[2]);
+            roundTotal += nums.length * money;
             return;
         }
 
-        // 生肖匹配：两个生肖各金额
-        let zodiacMatch = part.match(/([\u4e00-\u9fa5]{1,2})([\u4e00-\u9fa5]{1,2})各(\d+)/);
+        // 生肖部分匹配: 多个中文字符 + 各 + 金额
+        let zodiacMatch = part.match(/([\u4e00-\u9fa5]{1,})各(\d+)/);
         if(zodiacMatch){
-            let z1 = zodiacMatch[1];
-            let z2 = zodiacMatch[2];
-            let money = Number(zodiacMatch[3]);
-            if(zodiac.includes(z1) && zodiac.includes(z2)){
-                roundTotal += money*2;
-            }
+            let zStr = zodiacMatch[1].trim().split(''); // 每个中文字符一个生肖
+            let money = Number(zodiacMatch[2]);
+            // 过滤有效生肖
+            let validZ = zStr.filter(z=>zodiac.includes(z));
+            roundTotal += validZ.length * money;
             return;
         }
 
-        // 可以拓展：更多格式
     });
 
     totalAmount += roundTotal;
