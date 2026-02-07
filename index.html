@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多轮金额计算</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        h2 {
+            text-align: center;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:active {
+            background: #0056b3;
+        }
+        .box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: center;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>多轮金额计算</h2>
+
+<div class="box">
+    <input type="number" id="num" placeholder="输入 1 ~ 49 的数字" min="1" max="49">
+    <input type="number" id="money" placeholder="输入金额">
+    <button onclick="addRound()">确认本轮</button>
+</div>
+
+<div class="box total">
+    当前总金额：<span id="total">0</span>
+</div>
+
+<div class="box">
+    <strong>输入记录：</strong>
+    <ul id="history"></ul>
+</div>
+
+<script>
+    let totalAmount = 0;
+    let round = 1;
+
+    function addRound() {
+        const num = document.getElementById("num").value;
+        const money = document.getElementById("money").value;
+
+        if (num === "" || money === "") {
+            alert("请输入完整信息");
+            return;
+        }
+
+        if (num < 1 || num > 49) {
+            alert("数字必须在 1 到 49 之间");
+            return;
+        }
+
+        totalAmount += Number(money);
+        document.getElementById("total").innerText = totalAmount;
+
+        const li = document.createElement("li");
+        li.innerText = `第 ${round} 轮：数字 ${num}，金额 ${money}`;
+        document.getElementById("history").appendChild(li);
+
+        round++;
+        document.getElementById("num").value = "";
+        document.getElementById("money").value = "";
+    }
+</script>
+
+</body>
+</html>
