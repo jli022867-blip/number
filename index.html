@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>批量金额计算（数字+生肖最终修正版）</title>
+<title>批量金额计算（最终修正版）</title>
 
 <style>
 body{
@@ -40,7 +40,7 @@ button{
 
 <body>
 
-<h2>批量金额计算（数字 + 生肖最终修正版）</h2>
+<h2>批量金额计算（最终修正版）</h2>
 
 <div class="box">
 <input id="inputText" placeholder="例：牛10猪羊马各20蛇20，10 20 30各30">
@@ -69,14 +69,21 @@ function calculate() {
     }
 
     let roundTotal = 0;
-    // 拆分条目
     let parts = text.split(/[，,]/);
 
     parts.forEach(part=>{
         part = part.trim();
         if(!part) return;
 
-        // ---- 1. 先处理单独金额的生肖 ----
+        // ---- 1. 数字 + 各 + 金额 ----
+        let numMatch = part.match(/([\d\s]+)各(\d+)/);
+        if(numMatch){
+            let nums = numMatch[1].trim().split(/\s+/);
+            let money = Number(numMatch[2]);
+            roundTotal += nums.length * money;
+        }
+
+        // ---- 2. 单独金额生肖 ----
         let singleZodiacRegex = /([\u4e00-\u9fa5])(\d+)/g;
         let match;
         while((match = singleZodiacRegex.exec(part)) !== null){
@@ -87,25 +94,19 @@ function calculate() {
             }
         }
 
-        // ---- 2. 处理统一各金额的生肖 ----
-        // 匹配“纯中文+各+数字”，避免数字干扰
+        // ---- 3. 统一各金额生肖 ----
         let unifiedZodiacMatch = part.match(/([^\d]+)各(\d+)/);
         if(unifiedZodiacMatch){
-            let zs = unifiedZodiacMatch[1].split(''); // 每个字一个生肖
+            let zs = unifiedZodiacMatch[1].split('');
             let money = Number(unifiedZodiacMatch[2]);
             zs.forEach(z=>{
+                // 只计算有效生肖，且不重复计入已经单独金额的
                 if(zodiac.includes(z)){
+                    // 检查 z 是否已经被单独金额处理过
+                    // 为了简单逻辑，统一各金额匹配前，已经处理单独金额的都包含数字，所以不会重复
                     roundTotal += money;
                 }
             });
-        }
-
-        // ---- 3. 处理数字部分 ----
-        let numMatch = part.match(/([\d\s]+)各(\d+)/);
-        if(numMatch){
-            let nums = numMatch[1].trim().split(/\s+/);
-            let money = Number(numMatch[2]);
-            roundTotal += nums.length * money;
         }
     });
 
