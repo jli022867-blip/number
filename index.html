@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>批量金额计算（数字+生肖最终版）</title>
+<title>批量金额计算（数字+生肖最终修正版）</title>
 
 <style>
 body{
@@ -40,10 +40,10 @@ button{
 
 <body>
 
-<h2>批量金额计算（数字 + 生肖）</h2>
+<h2>批量金额计算（数字 + 生肖最终修正版）</h2>
 
 <div class="box">
-<input id="inputText" placeholder="例：牛20羊30马蛇猪各10，10 20各30">
+<input id="inputText" placeholder="例：牛10猪羊马各20蛇20，10 20 30各30">
 <button onclick="calculate()">确认本轮</button>
 </div>
 
@@ -59,49 +59,24 @@ button{
 <script>
 let totalAmount = 0;
 let round = 1;
-
-// 支持的生肖列表
 const zodiac = ["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
 
 function calculate() {
-    let text = document.getElementById("inputText").value;
+    let text = document.getElementById("inputText").value.trim();
     if(!text){
         alert("请输入内容");
         return;
     }
 
     let roundTotal = 0;
-    // 按逗号或顿号拆分条目
+    // 拆分条目
     let parts = text.split(/[，,]/);
 
     parts.forEach(part=>{
         part = part.trim();
         if(!part) return;
 
-        // ---- 数字部分 ----
-        let numMatch = part.match(/([\d\s]+)各(\d+)/);
-        if(numMatch){
-            let nums = numMatch[1].trim().split(/\s+/);
-            let money = Number(numMatch[2]);
-            roundTotal += nums.length * money;
-            return;
-        }
-
-        // ---- 生肖统一金额 ----
-        let zodiacAllMatch = part.match(/([\u4e00-\u9fa5]+)各(\d+)/);
-        if(zodiacAllMatch){
-            let zs = zodiacAllMatch[1].split(''); // 每个字一个生肖
-            let money = Number(zodiacAllMatch[2]);
-            zs.forEach(z=>{
-                if(zodiac.includes(z)){
-                    roundTotal += money;
-                }
-            });
-            return;
-        }
-
-        // ---- 生肖单独金额 ----
-        // 匹配 生肖+金额，可能连续多个，例如：牛20羊30马10
+        // ---- 1. 先处理单独金额的生肖 ----
         let singleZodiacRegex = /([\u4e00-\u9fa5])(\d+)/g;
         let match;
         while((match = singleZodiacRegex.exec(part)) !== null){
@@ -110,6 +85,27 @@ function calculate() {
             if(zodiac.includes(z)){
                 roundTotal += money;
             }
+        }
+
+        // ---- 2. 处理统一各金额的生肖 ----
+        // 匹配“纯中文+各+数字”，避免数字干扰
+        let unifiedZodiacMatch = part.match(/([^\d]+)各(\d+)/);
+        if(unifiedZodiacMatch){
+            let zs = unifiedZodiacMatch[1].split(''); // 每个字一个生肖
+            let money = Number(unifiedZodiacMatch[2]);
+            zs.forEach(z=>{
+                if(zodiac.includes(z)){
+                    roundTotal += money;
+                }
+            });
+        }
+
+        // ---- 3. 处理数字部分 ----
+        let numMatch = part.match(/([\d\s]+)各(\d+)/);
+        if(numMatch){
+            let nums = numMatch[1].trim().split(/\s+/);
+            let money = Number(numMatch[2]);
+            roundTotal += nums.length * money;
         }
     });
 
